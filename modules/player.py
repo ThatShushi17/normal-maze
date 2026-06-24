@@ -26,6 +26,8 @@ class Player:
 		return (int(self.pos.x), int(self.pos.y))
 
 	def _handle_input(self, keys):
+		move = pygame.Vector2()
+
 		if keys[pygame.K_LEFT]:
 			self.theta -= self.rot_speed
 		if keys[pygame.K_RIGHT]:
@@ -35,10 +37,14 @@ class Player:
 		tangent_vec = self.find_dir_vec(offset_rad=math.radians(90))
 
 		if keys[pygame.K_UP] or keys[pygame.K_w]:
-			self.pos += forward_vec * self.lin_speed
+			move += forward_vec
 		if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-			self.pos -= forward_vec * self.lin_speed
+			move -= forward_vec
 		if keys[pygame.K_a]:
-			self.pos -= tangent_vec * self.lin_speed
+			move -= tangent_vec
 		if keys[pygame.K_d]:
-			self.pos += tangent_vec * self.lin_speed
+			move += tangent_vec
+
+		if move.length_squared():  # isMoving
+			move = move.normalize()
+			self.pos += move * self.lin_speed
