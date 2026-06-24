@@ -13,3 +13,5 @@ wheels/
 *.sublime*
 run_app.sh
 .run_app*
+dev
+null
