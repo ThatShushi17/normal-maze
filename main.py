@@ -3,77 +3,83 @@ import sys
 import moderngl
 import numpy as np
 from modules.player import Player
-from modules.geometry import Rect
+# from modules.geometry import Rect
 
 WIDTH, HEIGHT = 800, 600
 
-# --- initialising pygame stuff --- #
+def main():
+	# --- initialising pygame stuff --- #
 
-pygame.init()
-screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.OPENGL | pygame.DOUBLEBUF)
-clock = pygame.time.Clock()
+	pygame.init()
+	screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.OPENGL | pygame.DOUBLEBUF)
+	clock = pygame.time.Clock()
 
-# --- initialising mgl stuff --- #
+	# pygame.mouse.set_visible(False)
+	# pygame.event.set_grab(True)
 
-ctx = moderngl.create_context()
-pygame_surf = pygame.Surface((WIDTH, HEIGHT))
+	# --- initialising mgl stuff --- #
 
-quad_verts = np.array([
-	-1.0,  1.0, 0.0, 1.0,
-	-1.0, -1.0, 0.0, 0.0,
-	 1.0,  1.0, 1.0, 1.0,
-	 1.0, -1.0, 1.0, 0.0,
-], dtype='f4')
+	ctx = moderngl.create_context()
+	pygame_surf = pygame.Surface((WIDTH, HEIGHT))
 
-with open('shaders/vert.glsl') as f:
-	vert_src = f.read()
-with open('shaders/frag.glsl') as f:
-	frag_src = f.read()
+	quad_verts = np.array([
+		-1.0,  1.0, 0.0, 1.0,
+		-1.0, -1.0, 0.0, 0.0,
+		 1.0,  1.0, 1.0, 1.0,
+		 1.0, -1.0, 1.0, 0.0,
+	], dtype='f4')
 
-program = ctx.program(vertex_shader=vert_src, fragment_shader=frag_src)
+	with open('shaders/vert.glsl') as f: vert_src = f.read()
+	with open('shaders/frag.glsl') as f: frag_src = f.read()
 
-vbo = ctx.buffer(quad_verts.tobytes())
-vao = ctx.vertex_array(program, [
-	(vbo, '2f 2f', 'in_vert', 'in_texcoord')
-])
+	program = ctx.program(vertex_shader=vert_src, fragment_shader=frag_src)
 
-tex = ctx.texture((WIDTH, HEIGHT), 4)
-tex.filter = (moderngl.NEAREST, moderngl.NEAREST)
+	vbo = ctx.buffer(quad_verts.tobytes())
+	vao = ctx.vertex_array(program, [
+		(vbo, '2f 2f', 'in_vert', 'in_texcoord')
+	])
 
-# --- initialising game stuff --- #
+	tex = ctx.texture((WIDTH, HEIGHT), 4)
+	tex.filter = (moderngl.NEAREST, moderngl.NEAREST)
 
-player = Player(WIDTH // 2, HEIGHT // 2, 0, 3, 3)
-walls = [
-	Rect(250, 150, 0, 100, 100)
-]
+	# --- initialising game stuff --- #
 
-# --- main loop --- #
+	player = Player(WIDTH // 2, HEIGHT // 2, 0, 3, 3)
+	# walls = [
+	# 	Rect(250, 150, 0, 100, 100)
+	# ]
 
-while True:
-	for event in pygame.event.get():
-		if event.type == pygame.QUIT:
-			pygame.quit()
-			sys.exit()
+	# --- main loop --- #
 
-	keys = pygame.key.get_pressed()
+	while True:
+		for event in pygame.event.get():
+			if event.type == pygame.QUIT:
+				pygame.quit()
+				sys.exit()
 
-	player.update(keys)
+		keys = pygame.key.get_pressed()
 
-	pygame_surf.fill((20, 20, 20))
+		player.update(keys)
 
-	for wall in walls:
-		wall.draw(pygame_surf)
+		pygame_surf.fill((20, 20, 20))
 
-	player.draw(pygame_surf)
+		# for wall in walls:
+		# 	wall.draw(pygame_surf)
 
-	surf_data = pygame.image.tostring(pygame_surf, 'RGBA', False)
-	tex.write(surf_data)
+		player.draw(pygame_surf)
 
-	ctx.clear(0.0, 0.0, 0.0, 1.0)
+		surf_data = pygame.image.tostring(pygame_surf, 'RGBA', False)
+		tex.write(surf_data)
 
-	tex.use(0)
-	program['u_tex'] = 0
-	vao.render(moderngl.TRIANGLE_STRIP)
+		ctx.clear(0.0, 0.0, 0.0, 1.0)
 
-	pygame.display.flip()
-	clock.tick(60)
+		tex.use(0)
+		program['u_tex'] = 0
+		vao.render(moderngl.TRIANGLE_STRIP)
+
+		pygame.display.flip()
+		clock.tick(60)
+
+
+if __name__ == "__main__":
+	main()

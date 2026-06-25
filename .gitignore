@@ -11,7 +11,5 @@ wheels/
 
 # Extras 
 *.sublime*
-run_app.sh
+run_app*
 .run_app*
-dev
-null

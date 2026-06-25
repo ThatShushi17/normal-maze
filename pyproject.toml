@@ -8,4 +8,5 @@ dependencies = [
     "moderngl>=5.12.0",
     "numpy>=2.5.0",
     "pygame>=2.6.1",
+    "pyglm>=2.8.3",
 ]

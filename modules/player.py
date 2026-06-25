@@ -1,6 +1,6 @@
 import pygame
 import math
-from helpers.datatypes import pygame_Vec2_to_int_tuple
+from helpers.data import pygame_Vec2_to_int_tuple
 
 class Player:
 	def __init__(self, x, y, theta, lin_speed=3, rot_speed=3) -> None:
