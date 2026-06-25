@@ -20,15 +20,15 @@ def generate_blank_room(room_id, size_x=32, size_y=32, size_z=32):
 	high_byte = pack_nybbles(FaceType.WALL_GREY, FaceType.EMPTY)
 
 	# yz walls
-	grid[:, :, 0, 0] = low_byte    # low
-	grid[:, :, -1, 0] = high_byte  # high
+	grid[:, :, 0, 0] = pack_nybbles(FaceType.EMPTY, FaceType.WALL_RED)    # low
+	grid[:, :, -1, 0] = pack_nybbles(FaceType.WALL_RED, FaceType.EMPTY)   # high
 
 	# xz walls
-	grid[:, 0, :, 1] = low_byte    # low
-	grid[:, -1, :, 1] = high_byte  # high
+	grid[:, 0, :, 1] = pack_nybbles(FaceType.EMPTY, FaceType.WALL_GREEN)  # low
+	grid[:, -1, :, 1] = pack_nybbles(FaceType.WALL_BLUE, FaceType.EMPTY)  # high
 
 	# xy walls
-	grid[0, :, :, 2] = low_byte    # low
-	grid[-1, :, :, 2] = high_byte  # high
+	grid[0, :, :, 2] = pack_nybbles(FaceType.EMPTY, FaceType.WALL_GREY)   # low
+	grid[-1, :, :, 2] = pack_nybbles(FaceType.WALL_GREY, FaceType.EMPTY)  # high
 
 	return grid
