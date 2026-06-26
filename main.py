@@ -46,8 +46,7 @@ def main():
 
 	# --- initialising game stuff --- #
 
-	# player = Player(WIDTH // 2, HEIGHT // 2, 2, 0, 0, 3, 3)
-	player = Player(16.0, 16.0, 2, 0, 0, 0.5, 3)
+	player = Player(2.0, 2.0, 2, 0, 0, 0.2, 3)
 	room = generate_blank_room(0)
 	tex_room = ctx.texture3d((32, 32, 32), 4, room.tobytes(), dtype='f1')
 	tex_room.filter = (moderngl.NEAREST, moderngl.NEAREST)
@@ -63,7 +62,7 @@ def main():
 		keys = pygame.key.get_pressed()
 		m_dx, m_dy = pygame.mouse.get_rel()
 
-		player.update(keys, m_dx, m_dy)
+		player.update(keys, m_dx, m_dy, room)
 
 		# --- compute shader stuff --- #
 

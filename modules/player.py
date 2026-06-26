@@ -1,14 +1,15 @@
 import pygame
 import glm
 import math
-from helpers.data import pygame_Vec2_to_int_tuple
+import numpy as np
+from helpers.data import get_nybble
 from helpers.math import clamp
 
 MOUSE_SENSITIVITY = 0.2
 WORLD_UP = glm.vec3(0.0, 0.0, 1.0)
 
 class Player:
-	def __init__(self, x, y, z, yaw, pitch, lin_speed=3, rot_speed=3) -> None:
+	def __init__(self, x, y, z, yaw, pitch, lin_speed=3.0, rot_speed=3.0) -> None:
 		self.lin_speed = lin_speed
 		self.rot_speed = rot_speed
 
@@ -25,22 +26,11 @@ class Player:
 		self.right = glm.vec3()
 		self.up = glm.vec3()
 
-	def update(self, keys, m_dx, m_dy):
+	def update(self, keys, m_dx, m_dy, room):
 		self._handle_direction(keys, m_dx, m_dy)
-		self._handle_movement(keys)
-
-
-	# def draw(self, surf):
-	# 	center = pygame_Vec2_to_int_tuple(self.pos)
-	# 	dir_end = pygame_Vec2_to_int_tuple(self.pos + self.find_dir_vec() * 25)
-
-	# 	pygame.draw.line(surf, (255, 255, 0), center, dir_end, 4)
-	# 	pygame.draw.circle(surf, (255, 73, 106), center, 8)
-
-
-	# def find_dir_vec(self, offset_rad=0.0):
-	# 	return pygame.Vector2(math.cos(self.theta + offset_rad), math.sin(self.theta + offset_rad))
-
+		self._set_velocity(keys)
+		self._handle_collisions(room)
+		self.pos += self.velocity
 
 	def _set_self_dir_vecs(self):
 		yaw = math.radians(self.yaw)
@@ -64,10 +54,10 @@ class Player:
 		self._set_self_dir_vecs()
 
 
-	def _handle_movement(self, keys):
-		self.velocity.x = 0
-		self.velocity.y = 0
-		self.velocity.z = 0
+	def _set_velocity(self, keys):
+		self.velocity.x = 0.0
+		self.velocity.y = 0.0
+		self.velocity.z = 0.0
 
 		if keys[pygame.K_UP] or keys[pygame.K_w]:
 			self.velocity += self.forward
@@ -85,3 +75,73 @@ class Player:
 		if glm.length2(self.velocity):  # type: ignore
 			self.velocity = glm.normalize(self.velocity) * self.lin_speed
 			self.pos += self.velocity
+
+	def _handle_collisions(self, room):
+		grid_pos = glm.ivec3(glm.floor(self.pos))
+		new_grid_pos = glm.ivec3(glm.floor(self.pos + self.velocity))
+		# grid_pos_delta = new_grid_pos - grid_pos
+
+		curr_voxel = room[grid_pos.z, grid_pos.y, grid_pos.x, :]
+
+		if 0 <= new_grid_pos.x <= 31:
+			new_voxel = room[grid_pos.z, grid_pos.y, new_grid_pos.x, :]
+
+			curr_face = get_nybble(curr_voxel[0], self.velocity.x > 0)
+			new_face = get_nybble(new_voxel[0], self.velocity.x < 0)
+
+			if curr_face != 0 or new_face != 0:
+				self.velocity.x = 0
+		else:
+			self.velocity.x = 0
+
+		if 0 <= new_grid_pos.y <= 31:
+			new_voxel = room[grid_pos.z, new_grid_pos.y, grid_pos.x, :]
+
+			curr_face = get_nybble(curr_voxel[1], self.velocity.y > 0)
+			new_face = get_nybble(new_voxel[1], self.velocity.y < 0)
+
+			if curr_face != 0 or new_face != 0:
+				self.velocity.y = 0
+		else:
+			self.velocity.y = 0
+
+		if 0 <= new_grid_pos.z <= 31:
+			new_voxel = room[new_grid_pos.z, grid_pos.y, grid_pos.x, :]
+
+			curr_face = get_nybble(curr_voxel[2], self.velocity.z > 0)
+			new_face = get_nybble(new_voxel[2], self.velocity.z < 0)
+
+			if curr_face != 0 or new_face != 0:
+				self.velocity.z = 0
+		else:
+			self.velocity.z = 0
+
+		# if (
+		# 	new_grid_pos.x < 0 or new_grid_pos.x > 31 or
+		# 	new_grid_pos.y < 0 or new_grid_pos.y > 31 or
+		# 	new_grid_pos.z < 0 or new_grid_pos.z > 31
+		# ):
+		# 	new_voxel = np.array([0, 0, 0, 0], dtype=np.uint8)
+		# else:
+		# 	new_voxel = room[new_grid_pos.z, new_grid_pos.y, new_grid_pos.x, :]
+
+		# if grid_pos_delta.x != 0:
+		# 	old_face = get_nybble(old_voxel[0], grid_pos_delta.x > 0)
+		# 	new_face = get_nybble(new_voxel[0], grid_pos_delta.x < 0)
+
+		# 	if old_face != 0 or new_face != 0:
+		# 		self.velocity.x = 0.0;
+
+		# if grid_pos_delta.y != 0:
+		# 	old_face = get_nybble(old_voxel[1], grid_pos_delta.y > 0)
+		# 	new_face = get_nybble(new_voxel[1], grid_pos_delta.y < 0)
+
+		# 	if old_face != 0 or new_face != 0:
+		# 		self.velocity.y = 0.0;
+
+		# if grid_pos_delta.z != 0:
+		# 	old_face = get_nybble(old_voxel[2], grid_pos_delta.z > 0)
+		# 	new_face = get_nybble(new_voxel[2], grid_pos_delta.z < 0)
+
+		# 	if old_face != 0 or new_face != 0:
+		# 		self.velocity.z = 0.0;

@@ -55,9 +55,10 @@ void main() {
 	}
 
 	bool hit = false;
-	int side = 0;
-	int face_type = 0;
 	int max_steps = 45;
+	int face_type = 0;
+	int side = 0;
+	int last_side = -1;
 
 	for (int i = 0; i < max_steps; i++) {
 		if (grid_pos.x < 0 || grid_pos.x > 31 ||
@@ -68,6 +69,19 @@ void main() {
 
 		vec4 vox = texelFetch(u_voxel_grid, grid_pos, 0);
 
+		if (last_side == 0) {
+			face_type = get_channel_nybble(vox.r, step_dir.x < 0);
+			if (face_type != 0) { hit = true; break; }
+
+		} else if (last_side == 1) {
+			face_type = get_channel_nybble(vox.g, step_dir.y < 0);
+			if (face_type != 0) { hit = true; break; }
+
+		} else {
+			face_type = get_channel_nybble(vox.b, step_dir.z < 0);
+			if (face_type != 0) { hit = true; break; }
+		}
+
 		if (side_dist.x < side_dist.y && side_dist.x < side_dist.z) {
 			side = 0;
 			face_type = get_channel_nybble(vox.r, step_dir.x > 0);
@@ -76,6 +90,7 @@ void main() {
 
 			side_dist.x += travel_delta.x;
 			grid_pos.x += step_dir.x;
+			last_side = 0;
 
 		} else if (side_dist.y < side_dist.z) {
 			side = 1;
@@ -85,6 +100,7 @@ void main() {
 
 			side_dist.y += travel_delta.y;
 			grid_pos.y += step_dir.y;
+			last_side = 1;
 			
 		} else {
 			side = 2;
@@ -94,6 +110,7 @@ void main() {
 
 			side_dist.z += travel_delta.z;
 			grid_pos.z += step_dir.z;
+			last_side = 2;
 		}
 	}
 
