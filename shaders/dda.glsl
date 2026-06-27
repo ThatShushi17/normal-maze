@@ -77,7 +77,7 @@ void main() {
 			face_type = get_channel_nybble(vox.g, step_dir.y < 0);
 			if (face_type != 0) { hit = true; break; }
 
-		} else {
+		} else if (last_side == 2) {
 			face_type = get_channel_nybble(vox.b, step_dir.z < 0);
 			if (face_type != 0) { hit = true; break; }
 		}
