@@ -20,7 +20,6 @@ def main():
 	# --- initialising mgl stuff --- #
 
 	ctx = moderngl.create_context()
-	pygame_surf = pygame.Surface((WIDTH, HEIGHT))
 
 	quad_verts = np.array([
 		-1.0,  1.0, 0.0, 1.0,

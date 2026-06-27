@@ -115,33 +115,3 @@ class Player:
 				self.velocity.z = 0
 		else:
 			self.velocity.z = 0
-
-		# if (
-		# 	new_grid_pos.x < 0 or new_grid_pos.x > 31 or
-		# 	new_grid_pos.y < 0 or new_grid_pos.y > 31 or
-		# 	new_grid_pos.z < 0 or new_grid_pos.z > 31
-		# ):
-		# 	new_voxel = np.array([0, 0, 0, 0], dtype=np.uint8)
-		# else:
-		# 	new_voxel = room[new_grid_pos.z, new_grid_pos.y, new_grid_pos.x, :]
-
-		# if grid_pos_delta.x != 0:
-		# 	old_face = get_nybble(old_voxel[0], grid_pos_delta.x > 0)
-		# 	new_face = get_nybble(new_voxel[0], grid_pos_delta.x < 0)
-
-		# 	if old_face != 0 or new_face != 0:
-		# 		self.velocity.x = 0.0;
-
-		# if grid_pos_delta.y != 0:
-		# 	old_face = get_nybble(old_voxel[1], grid_pos_delta.y > 0)
-		# 	new_face = get_nybble(new_voxel[1], grid_pos_delta.y < 0)
-
-		# 	if old_face != 0 or new_face != 0:
-		# 		self.velocity.y = 0.0;
-
-		# if grid_pos_delta.z != 0:
-		# 	old_face = get_nybble(old_voxel[2], grid_pos_delta.z > 0)
-		# 	new_face = get_nybble(new_voxel[2], grid_pos_delta.z < 0)
-
-		# 	if old_face != 0 or new_face != 0:
-		# 		self.velocity.z = 0.0;
