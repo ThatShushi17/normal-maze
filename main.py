@@ -52,11 +52,14 @@ def main():
 
 	# --- main loop --- #
 
-	while True:
+	running = True
+	while running:
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
-				pygame.quit()
-				sys.exit()
+				running = False
+			elif event.type == pygame.KEYDOWN:
+				if event.key == pygame.K_ESCAPE:
+					running = False
 
 		keys = pygame.key.get_pressed()
 		m_dx, m_dy = pygame.mouse.get_rel()
@@ -83,6 +86,18 @@ def main():
 
 		pygame.display.flip()
 		clock.tick(60)
+
+	print("exiting")
+
+	tex.release()
+	tex_room.release()
+	vbo.release()
+	vao.release()
+	program.release()
+	compute_shader.release()
+
+	pygame.quit()
+	sys.exit()
 
 
 if __name__ == "__main__":
