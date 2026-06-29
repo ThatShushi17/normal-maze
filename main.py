@@ -3,7 +3,7 @@ import sys
 import moderngl
 import numpy as np
 from modules.player import Player
-from modules.voxels import generate_blank_room
+from modules.generation import generate_blank_room
 
 WIDTH, HEIGHT = 800, 600
 
