@@ -1,5 +1,3 @@
-from helpers.data import get_nybble
-
 def from_face_idx(i: int):
 	return i // 2, i % 2  # voxel coord, is_high
 

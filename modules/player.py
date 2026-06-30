@@ -1,10 +1,9 @@
 import pygame
 import glm
 import math
-import numpy as np
 from helpers.math import clamp
 from helpers.voxels import check_face_solid
-from helpers.data import get_nybble, find_uv_axes
+from helpers.data import find_uv_axes
 
 MOUSE_SENSITIVITY = 0.2
 WORLD_UP = glm.vec3(0.0, 0.0, 1.0)
@@ -106,6 +105,7 @@ class Player:
 		RADIUS = 0.3
 		SPHERE_OFFSETS = [WORLD_UP * -0.6, glm.vec3(0.0), WORLD_UP * -0.6]
 
+		# DEPRACATED
 		# def check_colliding(eval_pos, eval_side):
 		# 	# uv are face coords
 		#   ax_u, ax_v = find_uv_axes(eval_side)

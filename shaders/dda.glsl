@@ -8,11 +8,16 @@ uniform vec3 u_cam_pos;
 uniform vec3 u_cam_forward;
 uniform vec3 u_cam_up;
 uniform vec3 u_cam_right;
-uniform sampler3D u_voxel_grid;
+uniform usampler3D u_voxel_grid;
 
-int get_channel_nybble(float channel_val, bool high) {
-	int byte_val = int(channel_val * 255.0 + 0.5);
-	return high ? ((byte_val >> 4) & 0x0F) : (byte_val & 0x0F);
+
+
+bool is_face_opaque(uint face_val) {
+	return 1 == ((face_val >> 7u) & 1u);
+}
+
+uint get_channel_byte(uint channel_data, bool high) {
+	return high ? ((channel_data >> 8) & 0xFF) : (channel_data & 0xFF);
 }
 
 void main() {
@@ -56,9 +61,10 @@ void main() {
 
 	bool hit = false;
 	int max_steps = 45;
-	int face_type = 0;
+	uint face_val = 0;
 	int side = 0;
 	int last_side = -1;
+	uvec4 vox;
 
 	for (int i = 0; i < max_steps; i++) {
 		if (grid_pos.x < 0 || grid_pos.x > 31 ||
@@ -67,26 +73,26 @@ void main() {
 			break;
 		}
 
-		vec4 vox = texelFetch(u_voxel_grid, grid_pos, 0);
+		vox = texelFetch(u_voxel_grid, grid_pos, 0);
 
 		if (last_side == 0) {
-			face_type = get_channel_nybble(vox.r, step_dir.x < 0);
-			if (face_type != 0) { hit = true; break; }
+			face_val = get_channel_byte(vox.r, step_dir.x < 0);
+			if (is_face_opaque(face_val)) { hit = true; break; }
 
 		} else if (last_side == 1) {
-			face_type = get_channel_nybble(vox.g, step_dir.y < 0);
-			if (face_type != 0) { hit = true; break; }
+			face_val = get_channel_byte(vox.g, step_dir.y < 0);
+			if (is_face_opaque(face_val)) { hit = true; break; }
 
 		} else if (last_side == 2) {
-			face_type = get_channel_nybble(vox.b, step_dir.z < 0);
-			if (face_type != 0) { hit = true; break; }
+			face_val = get_channel_byte(vox.b, step_dir.z < 0);
+			if (is_face_opaque(face_val)) { hit = true; break; }
 		}
 
 		if (side_dist.x < side_dist.y && side_dist.x < side_dist.z) {
 			side = 0;
-			face_type = get_channel_nybble(vox.r, step_dir.x > 0);
 
-			if (face_type != 0) { hit = true; break; }
+			face_val = get_channel_byte(vox.r, step_dir.x > 0);
+			if (is_face_opaque(face_val)) { hit = true; break; }
 
 			side_dist.x += travel_delta.x;
 			grid_pos.x += step_dir.x;
@@ -94,9 +100,9 @@ void main() {
 
 		} else if (side_dist.y < side_dist.z) {
 			side = 1;
-			face_type = get_channel_nybble(vox.g, step_dir.y > 0);
 
-			if (face_type != 0) { hit = true; break; }
+			face_val = get_channel_byte(vox.g, step_dir.y > 0);
+			if (is_face_opaque(face_val)) { hit = true; break; }
 
 			side_dist.y += travel_delta.y;
 			grid_pos.y += step_dir.y;
@@ -104,9 +110,9 @@ void main() {
 			
 		} else {
 			side = 2;
-			face_type = get_channel_nybble(vox.b, step_dir.z > 0);
 
-			if (face_type != 0) { hit = true; break; }
+			face_val = get_channel_byte(vox.b, step_dir.z > 0);
+			if (is_face_opaque(face_val)) { hit = true; break; }
 
 			side_dist.z += travel_delta.z;
 			grid_pos.z += step_dir.z;
@@ -118,10 +124,11 @@ void main() {
 
 	if (hit) {
 		vec3 color = vec3(0.5);  // grey wall
+		uint face_data = face_val & 0xF;
 
-		if (face_type == 2) color = vec3(0.7, 0.2, 0.2);  // red wall
-		if (face_type == 3) color = vec3(0.2, 0.7, 0.2);  // green wall
-		if (face_type == 4) color = vec3(0.2, 0.2, 0.7);  // blue wall
+		if (face_data == 4) color = vec3(0.7, 0.2, 0.2);  // red wall
+		if (face_data == 8) color = vec3(0.2, 0.7, 0.2);  // green wall
+		if (face_data == 12) color = vec3(0.2, 0.2, 0.7);  // blue wall
 
 		if (side == 1) color *= 0.8;  // xz plane dimming
 		if (side == 2) color *= 0.6;  // xy plane dimming

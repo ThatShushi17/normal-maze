@@ -47,7 +47,7 @@ def main():
 
 	player = Player(2.0, 2.0, 2, 0, 0, 0.2, 3)
 	room = generate_blank_room(0)
-	tex_room = ctx.texture3d((32, 32, 32), 4, room.tobytes(), dtype='f1')
+	tex_room = ctx.texture3d((32, 32, 32), 4, room.tobytes(), dtype='u2')
 	tex_room.filter = (moderngl.NEAREST, moderngl.NEAREST)
 
 	# --- main loop --- #
