@@ -9,8 +9,8 @@ class RoomBuilder:
 		end_u, end_v = start_u + size_u, start_u + size_v
 		output = data << 4 if is_high else data  # TEMPORARY
 		if axis == 0:
-			room[start_v:end_u, start_u:end_u, vox_dist, axis] = output
+			room[start_v:end_v, start_u:end_u, vox_dist, axis] = output
 		elif axis == 1:
-			room[start_v:end_u, vox_dist, start_u:end_u, axis] = output
+			room[start_v:end_v, vox_dist, start_u:end_u, axis] = output
 		elif axis == 2:
-			room[vox_dist, start_v:end_u, start_u:end_u, axis] = output
+			room[vox_dist, start_v:end_v, start_u:end_u, axis] = output
