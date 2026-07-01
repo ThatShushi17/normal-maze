@@ -1,5 +1,8 @@
+def to_face_idx(vox_dist, is_high):
+	return 2 * vox_dist + is_high
+
 def from_face_idx(i: int):
-	return i // 2, i % 2  # voxel coord, is_high
+	return i // 2, (i % 2) == 1  # vox_dist, is_high
 
 # None => check both
 def check_face_solid(face_1, face_2, is2=None):

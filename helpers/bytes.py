@@ -27,3 +27,9 @@ def pack_bytes(byte_0, byte_1, high_switch=None):
 		byte_1 <<= 8
 
 	return byte_1 | byte_0
+
+# def overwrite_byte(data, byte, is_high):
+# 	mask = 0xFF if is_high else 0xFF00
+# 	insert = byte << 8 if is_high else byte
+
+# 	return  (data & mask) | insert

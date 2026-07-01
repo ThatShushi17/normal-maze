@@ -3,9 +3,20 @@ import sys
 import moderngl
 import numpy as np
 from modules.player import Player
-from modules.generation import generate_blank_room
+from modules.room_builder import RoomBuilder
+from helpers.dataclasses import FaceSet
+from helpers.bytes import pack_byte
+from enum import IntEnum
 
 WIDTH, HEIGHT = 800, 600
+
+class FaceType(IntEnum):
+	EMPTY = pack_byte(0, 0, 0, 0)
+
+	WALL_GREY = pack_byte(1, 0, 0, 0)
+	WALL_RED = pack_byte(1, 0, 0, 4)
+	WALL_GREEN = pack_byte(1, 0, 0, 8)
+	WALL_BLUE = pack_byte(1, 0, 0, 12)
 
 def main():
 	# --- initialising pygame stuff --- #
@@ -46,7 +57,21 @@ def main():
 	# --- initialising game stuff --- #
 
 	player = Player(2.0, 2.0, 2, 0, 0, 0.2, 3)
-	room = generate_blank_room(0)
+
+	builder = RoomBuilder()
+	room = builder.create_room()
+	builder.bind_room(room)
+	builder.box(
+		face_pos=(0, 0, 0),
+		face_size=(63, 63, 63),
+		faces=FaceSet.matching(
+			face_x=FaceType.WALL_RED,
+			face_y=FaceType.WALL_GREEN,
+			face_z=FaceType.WALL_GREY,
+		)
+	)
+	builder.build()
+
 	tex_room = ctx.texture3d((32, 32, 32), 4, room.tobytes(), dtype='u2')
 	tex_room.filter = (moderngl.NEAREST, moderngl.NEAREST)
 
