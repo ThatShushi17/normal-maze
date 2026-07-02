@@ -2,10 +2,11 @@ import pygame
 import sys
 import moderngl
 import numpy as np
-from modules.player import Player
-from modules.room_builder import RoomBuilder
-from helpers.dataclasses import FaceSet
-from helpers.bytes import pack_byte
+
+from engine.world.entities.player import Player
+from engine.world.generation.room_builder import RoomBuilder
+from engine.world.face import FaceSet
+from engine.math.bytes import pack_byte
 from enum import IntEnum
 
 WIDTH, HEIGHT = 800, 600
@@ -39,9 +40,9 @@ def main():
 		 1.0, -1.0, 1.0, 0.0,
 	], dtype='f4')
 
-	with open('shaders/vert.glsl') as f: vert_src = f.read()
-	with open('shaders/frag.glsl') as f: frag_src = f.read()
-	with open('shaders/dda.glsl') as f: comp_src = f.read()
+	with open('engine/render/shaders/vert.glsl') as f: vert_src = f.read()
+	with open('engine/render/shaders/frag.glsl') as f: frag_src = f.read()
+	with open('engine/render/shaders/dda.glsl') as f: comp_src = f.read()
 
 	program = ctx.program(vertex_shader=vert_src, fragment_shader=frag_src)
 	compute_shader = ctx.compute_shader(comp_src)

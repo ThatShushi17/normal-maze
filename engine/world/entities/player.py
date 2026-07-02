@@ -1,9 +1,8 @@
 import pygame
 import glm
 import math
-from helpers.math import clamp
-from helpers.voxels import check_face_solid
-from helpers.data import find_uv_axes
+from engine.math.functions import clamp
+from engine.math.geometry import check_face_solid, find_uv_axes
 
 MOUSE_SENSITIVITY = 0.2
 WORLD_UP = glm.vec3(0.0, 0.0, 1.0)

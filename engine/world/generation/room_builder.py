@@ -1,6 +1,5 @@
 import numpy as np
-from helpers.data import find_uv_axes
-from helpers.voxels import from_face_idx, to_face_idx
+from engine.math.geometry import find_uv_axes, from_face_idx, to_face_idx
 
 class RoomBuilder:
 	def __init__(self) -> None:
