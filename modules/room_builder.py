@@ -1,6 +1,6 @@
 import numpy as np
 from helpers.data import find_uv_axes
-from helpers.voxels import from_face_idx
+from helpers.voxels import from_face_idx, to_face_idx
 
 class RoomBuilder:
 	def __init__(self) -> None:
@@ -37,24 +37,20 @@ class RoomBuilder:
 		vox_dist, is_high = from_face_idx(face_i)
 		self._wall_queue.append(lambda: self._wall(self.room, data, axis, vox_dist, is_high, size_u, size_v, start_u, start_v))
 
-	def box(self, face_pos, face_size, faces):
+	def box(self, pos, size, faces):
 		for axis in range(3):
 			axis_u, axis_v = find_uv_axes(axis)
 
-			face_start_dist, face_end_dist = face_pos[axis], face_pos[axis] + face_size[axis]
+			start_dist = pos[axis]
+			end_dist = start_dist + size[axis] - 1
+			start_u, start_v = pos[axis_u], pos[axis_v]
+			size_u, size_v = size[axis_u], size[axis_v]
 
-			start_is_high = face_start_dist % 2
-			end_is_high = face_end_dist % 2
+			face_start_dist = to_face_idx(start_dist, False)
+			face_end_dist = to_face_idx(end_dist, True)
 
-			face_size_u, face_size_v = face_size[axis_u], face_size[axis_v]
-			face_start_u, face_start_v = face_pos[axis_u], face_pos[axis_v]
-
-			start_u, start_v = face_start_u // 2, face_start_v // 2
-			size_u, size_v = face_size_u // 2, face_size_v // 2
-
-			self.wall(faces[axis, start_is_high], axis, face_start_dist, size_u, size_v, start_u, start_v)
-			self.wall(faces[axis, end_is_high], axis, face_end_dist, size_u, size_v, start_u, start_v)
-
+			self.wall(faces[axis, 0], axis, face_start_dist, size_u, size_v, start_u, start_v)
+			self.wall(faces[axis, 1], axis, face_end_dist, size_u, size_v, start_u, start_v)
 
 	def build(self):
 		for f in self._wall_queue:

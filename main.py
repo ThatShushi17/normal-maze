@@ -62,8 +62,8 @@ def main():
 	room = builder.create_room()
 	builder.bind_room(room)
 	builder.box(
-		face_pos=(0, 0, 0),
-		face_size=(63, 63, 63),
+		pos=(0, 0, 0),
+		size=(32, 32, 32),
 		faces=FaceSet.matching(
 			face_x=FaceType.WALL_RED,
 			face_y=FaceType.WALL_GREEN,
