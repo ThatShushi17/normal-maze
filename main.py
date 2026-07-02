@@ -3,9 +3,11 @@ import sys
 import moderngl
 import numpy as np
 
-from engine.world.entities.player import Player
-from engine.world.generation.room_builder import RoomBuilder
-from engine.world.face import FaceSet
+from engine.world import Player, RoomBuilder, FaceSet
+
+# from engine.world.entities.player import Player
+# from engine.world.generation.room_builder import RoomBuilder
+# from engine.world.face import FaceSet
 from engine.math.bytes import pack_byte
 from enum import IntEnum
 
