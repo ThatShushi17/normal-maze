@@ -2,6 +2,7 @@ import pygame
 import sys
 import moderngl
 import numpy as np
+import math
 
 from engine.world import Player, RoomBuilder, FaceSet
 
@@ -13,13 +14,20 @@ from enum import IntEnum
 
 WIDTH, HEIGHT = 800, 600
 
+colors = np.zeros((16, 3), dtype=np.float32)
+colors[0] = (0.5, 0.5, 0.5)
+colors[1] = (0.7, 0.2, 0.2)
+colors[2] = (0.2, 0.7, 0.2)
+colors[3] = (0.2, 0.2, 0.7)
+
 class FaceType(IntEnum):
 	EMPTY = pack_byte(0, 0, 0, 0)
 
 	WALL_GREY = pack_byte(1, 0, 0, 0)
-	WALL_RED = pack_byte(1, 0, 0, 4)
-	WALL_GREEN = pack_byte(1, 0, 0, 8)
-	WALL_BLUE = pack_byte(1, 0, 0, 12)
+	WALL_RED = pack_byte(1, 0, 0, 1)
+	WALL_GREEN = pack_byte(1, 0, 0, 2)
+	WALL_BLUE = pack_byte(1, 0, 0, 3)
+	WALL_ANIM = pack_byte(1, 0, 0, 4)
 
 def main():
 	# --- initialising pygame stuff --- #
@@ -70,7 +78,7 @@ def main():
 		faces=FaceSet.matching(
 			face_x=FaceType.WALL_RED,
 			face_y=FaceType.WALL_GREEN,
-			face_z=FaceType.WALL_GREY,
+			face_z=FaceType.WALL_ANIM,
 		)
 	)
 	builder.build()
@@ -82,6 +90,11 @@ def main():
 
 	running = True
 	while running:
+		dt = clock.tick(60) / 1000.0
+		t = pygame.time.get_ticks() / 1000.0
+
+		colors[4] = (1.0, 0.0, 0.0) if int(t) % 2 == 0 else (0.0, 1.0, 0.0)
+
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				running = False
@@ -105,6 +118,8 @@ def main():
 		compute_shader['u_cam_up'] = tuple(player.up)
 		compute_shader['u_cam_right'] = tuple(player.right)
 
+		compute_shader['u_palette'].write(colors.copy().tobytes())
+
 		compute_shader.run(int(np.ceil(WIDTH / 8)), int(np.ceil(HEIGHT / 8)))
 
 		ctx.clear()
@@ -113,7 +128,6 @@ def main():
 		vao.render(moderngl.TRIANGLE_STRIP)
 
 		pygame.display.flip()
-		clock.tick(60)
 
 	print("exiting")
 

@@ -9,8 +9,7 @@ uniform vec3 u_cam_forward;
 uniform vec3 u_cam_up;
 uniform vec3 u_cam_right;
 uniform usampler3D u_voxel_grid;
-
-
+uniform vec3 u_palette[16];
 
 bool is_face_opaque(uint face_val) {
 	return 1 == ((face_val >> 7u) & 1u);
@@ -123,12 +122,8 @@ void main() {
 	vec4 pixel_color = vec4(0.10, 0.05, 0.05, 1.0);  // default/error
 
 	if (hit) {
-		vec3 color = vec3(0.5);  // grey wall
 		uint face_data = face_val & 0xF;
-
-		if (face_data == 4) color = vec3(0.7, 0.2, 0.2);  // red wall
-		if (face_data == 8) color = vec3(0.2, 0.7, 0.2);  // green wall
-		if (face_data == 12) color = vec3(0.2, 0.2, 0.7);  // blue wall
+		vec3 color = u_palette[face_data];
 
 		if (side == 1) color *= 0.8;  // xz plane dimming
 		if (side == 2) color *= 0.6;  // xy plane dimming
