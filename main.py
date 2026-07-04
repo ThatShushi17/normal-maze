@@ -5,20 +5,19 @@ import numpy as np
 import math
 
 from engine.world import Player, RoomBuilder, FaceSet
-
-# from engine.world.entities.player import Player
-# from engine.world.generation.room_builder import RoomBuilder
-# from engine.world.face import FaceSet
+from engine.math.colors import Palette
 from engine.math.bytes import pack_byte
+
 from enum import IntEnum
 
 WIDTH, HEIGHT = 800, 600
 
-colors = np.zeros((16, 3), dtype=np.float32)
-colors[0] = (0.5, 0.5, 0.5)
-colors[1] = (0.7, 0.2, 0.2)
-colors[2] = (0.2, 0.7, 0.2)
-colors[3] = (0.2, 0.2, 0.7)
+palette = Palette()
+
+palette[0] = (0.5, 0.5, 0.5)
+palette[1] = (0.7, 0.2, 0.2)
+palette[2] = (0.2, 0.7, 0.2)
+palette[3] = (0.2, 0.2, 0.7)
 
 class FaceType(IntEnum):
 	EMPTY = pack_byte(0, 0, 0, 0)
@@ -93,7 +92,7 @@ def main():
 		dt = clock.tick(60) / 1000.0
 		t = pygame.time.get_ticks() / 1000.0
 
-		colors[4] = (1.0, 0.0, 0.0) if int(t) % 2 == 0 else (0.0, 1.0, 0.0)
+		palette[4] = (math.sin(t) * 2 + 1, 0.0, 0.0)
 
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
@@ -118,7 +117,7 @@ def main():
 		compute_shader['u_cam_up'] = tuple(player.up)
 		compute_shader['u_cam_right'] = tuple(player.right)
 
-		compute_shader['u_palette'].write(colors.copy().tobytes())
+		compute_shader['u_palette'].write(palette.colors.copy().tobytes())
 
 		compute_shader.run(int(np.ceil(WIDTH / 8)), int(np.ceil(HEIGHT / 8)))
 

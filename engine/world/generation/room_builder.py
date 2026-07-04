@@ -2,7 +2,7 @@ import numpy as np
 from engine.math.geometry import find_uv_axes, from_face_idx, to_face_idx
 
 class RoomBuilder:
-	def __init__(self) -> None:
+	def __init__(self):
 		self.room = None
 		self._wall_queue = []
 

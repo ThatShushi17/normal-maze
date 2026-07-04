@@ -8,7 +8,7 @@ MOUSE_SENSITIVITY = 0.2
 WORLD_UP = glm.vec3(0.0, 0.0, 1.0)
 
 class Player:
-	def __init__(self, x, y, z, yaw, pitch, lin_speed=3.0, rot_speed=3.0) -> None:
+	def __init__(self, x, y, z, yaw, pitch, lin_speed=3.0, rot_speed=3.0):
 		self.lin_speed = lin_speed
 		self.rot_speed = rot_speed
 
