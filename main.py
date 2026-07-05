@@ -22,11 +22,11 @@ palette[3] = (0.2, 0.2, 0.7)
 class FaceType(IntEnum):
 	EMPTY = pack_byte(0, 0, 0, 0)
 
-	WALL_GREY = pack_byte(1, 0, 0, 0)
-	WALL_RED = pack_byte(1, 0, 0, 1)
-	WALL_GREEN = pack_byte(1, 0, 0, 2)
-	WALL_BLUE = pack_byte(1, 0, 0, 3)
-	WALL_ANIM = pack_byte(1, 0, 0, 4)
+	WALL_GREY = pack_byte(1, 0, 1, 0)
+	WALL_RED = pack_byte(1, 0, 1, 1)
+	WALL_GREEN = pack_byte(1, 0, 1, 2)
+	WALL_BLUE = pack_byte(1, 0, 1, 3)
+	WALL_ANIM = pack_byte(1, 0, 1, 4)
 
 def main():
 	# --- initialising pygame stuff --- #

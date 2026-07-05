@@ -64,6 +64,7 @@ void main() {
 	int side = 0;
 	int last_side = -1;
 	uvec4 vox;
+	float t_hit = 0.0;
 
 	for (int i = 0; i < max_steps; i++) {
 		if (grid_pos.x < 0 || grid_pos.x > 31 ||
@@ -76,22 +77,38 @@ void main() {
 
 		if (last_side == 0) {
 			face_val = get_channel_byte(vox.r, step_dir.x < 0);
-			if (is_face_opaque(face_val)) { hit = true; break; }
+			if (is_face_opaque(face_val)) {
+				hit = true;
+				t_hit = side_dist.x - travel_delta.x;
+				break;
+			}
 
 		} else if (last_side == 1) {
 			face_val = get_channel_byte(vox.g, step_dir.y < 0);
-			if (is_face_opaque(face_val)) { hit = true; break; }
+			if (is_face_opaque(face_val)) {
+				hit = true;
+				t_hit = side_dist.y - travel_delta.y;
+				break;
+			}
 
 		} else if (last_side == 2) {
 			face_val = get_channel_byte(vox.b, step_dir.z < 0);
-			if (is_face_opaque(face_val)) { hit = true; break; }
+			if (is_face_opaque(face_val)) {
+				hit = true;
+				t_hit = side_dist.z - travel_delta.z;
+				break;
+			}
 		}
 
 		if (side_dist.x < side_dist.y && side_dist.x < side_dist.z) {
 			side = 0;
 
 			face_val = get_channel_byte(vox.r, step_dir.x > 0);
-			if (is_face_opaque(face_val)) { hit = true; break; }
+			if (is_face_opaque(face_val)) {
+				hit = true;
+				t_hit = side_dist.x;
+				break;
+			}
 
 			side_dist.x += travel_delta.x;
 			grid_pos.x += step_dir.x;
@@ -101,7 +118,11 @@ void main() {
 			side = 1;
 
 			face_val = get_channel_byte(vox.g, step_dir.y > 0);
-			if (is_face_opaque(face_val)) { hit = true; break; }
+			if (is_face_opaque(face_val)) {
+				hit = true;
+				t_hit = side_dist.y;
+				break;
+			}
 
 			side_dist.y += travel_delta.y;
 			grid_pos.y += step_dir.y;
@@ -111,7 +132,11 @@ void main() {
 			side = 2;
 
 			face_val = get_channel_byte(vox.b, step_dir.z > 0);
-			if (is_face_opaque(face_val)) { hit = true; break; }
+			if (is_face_opaque(face_val)) {
+				hit = true;
+				t_hit = side_dist.z;
+				break;
+			}
 
 			side_dist.z += travel_delta.z;
 			grid_pos.z += step_dir.z;
@@ -122,8 +147,34 @@ void main() {
 	vec4 pixel_color = vec4(0.10, 0.05, 0.05, 1.0);  // default/error
 
 	if (hit) {
-		uint face_data = face_val & 0xF;
+		uint face_data = face_val & 0xFu;
+		uint face_datatype = (face_val >> 4u) & 3u;
 		vec3 color = u_palette[face_data];
+
+		if (face_datatype == 1u) {
+			vec3 hit_pos = ray_pos + t_hit * ray_dir;
+			vec2 face_uv;
+
+			if (side == 0)      face_uv = fract(hit_pos.yz);
+			else if (side == 1) face_uv = fract(hit_pos.xz);
+			else                face_uv = fract(hit_pos.xy);
+
+			float thickness = 0.02;
+			if (face_uv.x < thickness || face_uv.x > 1.0 - thickness ||
+				face_uv.y < thickness || face_uv.y > 1.0 - thickness) {
+				color = mix(vec3(0.25), color, 0.85);
+			} else {
+				int n = 4;  // number of gridlines per tile
+				float sub_thickness = thickness * float(n + 1) * 0.33;
+
+				vec2 sub_uv = fract(face_uv * float(n + 1));
+
+				if (sub_uv.x < sub_thickness || sub_uv.x > 1.0 - sub_thickness ||
+					sub_uv.y < sub_thickness || sub_uv.y > 1.0 - sub_thickness) {
+					color = mix(vec3(0.25), color, 0.85);
+				}
+			}
+		}
 
 		if (side == 1) color *= 0.8;  // xz plane dimming
 		if (side == 2) color *= 0.6;  // xy plane dimming
