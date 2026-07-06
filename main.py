@@ -6,7 +6,7 @@ import math
 
 from engine.world import Player, RoomBuilder, FaceSet
 from engine.math.colors import Palette
-from engine.math.bytes import pack_byte
+from engine.world.face import generate_wall_data
 
 from enum import IntEnum
 
@@ -19,14 +19,12 @@ palette[1] = (0.7, 0.2, 0.2)
 palette[2] = (0.2, 0.7, 0.2)
 palette[3] = (0.2, 0.2, 0.7)
 
-class FaceType(IntEnum):
-	EMPTY = pack_byte(0, 0, 0, 0)
+palette.set_name(0, "grey")
+palette.set_name(1, "red")
+palette.set_name(2, "green")
+palette.set_name(3, "blue")
+palette.set_name(4, "anim")
 
-	WALL_GREY = pack_byte(1, 0, 1, 0)
-	WALL_RED = pack_byte(1, 0, 1, 1)
-	WALL_GREEN = pack_byte(1, 0, 1, 2)
-	WALL_BLUE = pack_byte(1, 0, 1, 3)
-	WALL_ANIM = pack_byte(1, 0, 1, 4)
 
 def main():
 	# --- initialising pygame stuff --- #
@@ -75,9 +73,9 @@ def main():
 		pos=(0, 0, 0),
 		size=(32, 32, 32),
 		faces=FaceSet.matching(
-			face_x=FaceType.WALL_RED,
-			face_y=FaceType.WALL_GREEN,
-			face_z=FaceType.WALL_ANIM,
+			face_x=generate_wall_data(1, palette.get_id("red")),
+			face_y=generate_wall_data(1, palette.get_id("green")),
+			face_z=generate_wall_data(0, palette.get_id("anim")),
 		)
 	)
 	builder.build()
@@ -117,7 +115,7 @@ def main():
 		compute_shader['u_cam_up'] = tuple(player.up)
 		compute_shader['u_cam_right'] = tuple(player.right)
 
-		compute_shader['u_palette'].write(palette.colors.copy().tobytes())
+		compute_shader['u_palette'].write(palette.tobytes())
 
 		compute_shader.run(int(np.ceil(WIDTH / 8)), int(np.ceil(HEIGHT / 8)))
 

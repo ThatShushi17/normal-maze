@@ -1,4 +1,8 @@
 from dataclasses import dataclass
+from engine.math.bytes import pack_byte
+
+def generate_wall_data(datatype, data):
+	return pack_byte(1, 0, datatype, data)
 
 @dataclass(frozen=True)
 class FaceSet:
