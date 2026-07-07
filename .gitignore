@@ -13,3 +13,4 @@ wheels/
 *.sublime*
 run_app*
 .run_app*
+screenshots/

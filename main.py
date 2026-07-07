@@ -1,14 +1,15 @@
+import os
 import pygame
 import sys
 import moderngl
 import numpy as np
 import math
 
+from PIL import Image
+
 from engine.world import Player, RoomBuilder, FaceSet
 from engine.math.colors import Palette
 from engine.world.face import generate_wall_data
-
-from enum import IntEnum
 
 WIDTH, HEIGHT = 800, 600
 
@@ -24,6 +25,22 @@ palette.set_name(1, "red")
 palette.set_name(2, "green")
 palette.set_name(3, "blue")
 palette.set_name(4, "anim")
+
+
+def screenshot(ctx, dirname="screenshots"):
+	if not os.path.exists(dirname):
+		os.makedirs(dirname)
+
+	current_filecount = len(os.listdir(dirname))
+	filename = f"screenshot_{current_filecount + 1}.png"
+	path = os.path.join(dirname, filename)
+
+	img_data = ctx.screen.read(components=3)
+	image = Image.frombytes("RGB", (WIDTH, HEIGHT), img_data)
+	image = image.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
+
+	image.save(path)
+	print(f"saved screenshot to: {path}")
 
 
 def main():
@@ -64,6 +81,9 @@ def main():
 
 	# --- initialising game stuff --- #
 
+	screenshot_taken = False
+
+
 	player = Player(2.0, 2.0, 2, 0, 0, 0.2, 3)
 
 	builder = RoomBuilder()
@@ -95,9 +115,17 @@ def main():
 		for event in pygame.event.get():
 			if event.type == pygame.QUIT:
 				running = False
+
 			elif event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_ESCAPE:
 					running = False
+
+				if event.key == pygame.K_F12 and not screenshot_taken:
+					screenshot(ctx)
+					screenshot_taken = True
+
+			elif event.type == pygame.KEYUP:
+				screenshot_taken = False
 
 		keys = pygame.key.get_pressed()
 		m_dx, m_dy = pygame.mouse.get_rel()
