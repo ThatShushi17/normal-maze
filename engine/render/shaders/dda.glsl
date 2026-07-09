@@ -15,6 +15,10 @@ bool is_face_opaque(uint face_val) {
 	return 1 == ((face_val >> 7u) & 1u);
 }
 
+bool is_face_portal(uint face_val) {
+	return 1 == ((face_val >> 6u) & 1u);
+}
+
 uint get_channel_byte(uint channel_data, bool high) {
 	return high ? ((channel_data >> 8) & 0xFF) : (channel_data & 0xFF);
 }
@@ -59,7 +63,7 @@ void main() {
 	}
 
 	bool hit = false;
-	int max_steps = 45;
+	int max_steps = 30;
 	uint face_val = 0;
 	int side = 0;
 	int last_side = -1;
@@ -77,6 +81,7 @@ void main() {
 
 		if (last_side == 0) {
 			face_val = get_channel_byte(vox.r, step_dir.x < 0);
+			
 			if (is_face_opaque(face_val)) {
 				hit = true;
 				t_hit = side_dist.x - travel_delta.x;
@@ -85,6 +90,7 @@ void main() {
 
 		} else if (last_side == 1) {
 			face_val = get_channel_byte(vox.g, step_dir.y < 0);
+			
 			if (is_face_opaque(face_val)) {
 				hit = true;
 				t_hit = side_dist.y - travel_delta.y;
@@ -93,6 +99,7 @@ void main() {
 
 		} else if (last_side == 2) {
 			face_val = get_channel_byte(vox.b, step_dir.z < 0);
+			
 			if (is_face_opaque(face_val)) {
 				hit = true;
 				t_hit = side_dist.z - travel_delta.z;
@@ -108,6 +115,11 @@ void main() {
 				hit = true;
 				t_hit = side_dist.x;
 				break;
+			}
+
+			if (is_face_portal(face_val)) {
+				grid_pos.x += 20;
+				last_side = -1;
 			}
 
 			side_dist.x += travel_delta.x;
