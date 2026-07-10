@@ -2,7 +2,15 @@
 
 layout (local_size_x = 8, local_size_y = 8) in;
 
+struct PortalData {
+	ivec3 delta;
+	int flip_main;
+};
+
 layout (rgba8, binding = 0) writeonly uniform image2D img_output;
+layout (std430, binding = 2) buffer PortalDataBuffer {
+	PortalData portals[];
+};
 
 uniform vec3 u_cam_pos;
 uniform vec3 u_cam_forward;
@@ -21,6 +29,45 @@ bool is_face_portal(uint face_val) {
 
 uint get_channel_byte(uint channel_data, bool high) {
 	return high ? ((channel_data >> 8) & 0xFF) : (channel_data & 0xFF);
+}
+
+vec3 calculate_side_dist(vec3 ray_pos, vec3 ray_dir, ivec3 grid_pos, vec3 travel_delta) {
+	vec3 side_dist;
+	
+	if (ray_dir.x < 0.0) side_dist.x = (ray_pos.x - float(grid_pos.x)) * travel_delta.x;
+	else                 side_dist.x = (float(grid_pos.x) + 1.0 - ray_pos.x) * travel_delta.x;
+	
+	if (ray_dir.y < 0.0) side_dist.y = (ray_pos.y - float(grid_pos.y)) * travel_delta.y;
+	else                 side_dist.y = (float(grid_pos.y) + 1.0 - ray_pos.y) * travel_delta.y;
+	
+	if (ray_dir.z < 0.0) side_dist.z = (ray_pos.z - float(grid_pos.z)) * travel_delta.z;
+	else                 side_dist.z = (float(grid_pos.z) + 1.0 - ray_pos.z) * travel_delta.z;
+
+	return side_dist;
+}
+
+void traverse_portal(uint face_val, int side, float t_hit,
+		inout vec3 ray_pos, inout vec3 ray_dir, inout ivec3 step_dir,
+		inout ivec3 grid_pos, inout vec3 side_dist, vec3 travel_delta) {
+
+	uint portal_id = face_val & 0x3Fu;
+
+	vec3 delta = vec3(portals[portal_id].delta);
+	bool flip = portals[portal_id].flip_main != 0;
+
+	vec3 hit_pos = ray_pos + t_hit * ray_dir;
+
+	if (flip) {
+		if (side == 0)      ray_dir.x = -ray_dir.x;
+		else if (side == 1) ray_dir.y = -ray_dir.y;
+		else if (side == 2) ray_dir.z = -ray_dir.z;
+
+		step_dir = ivec3(sign(ray_dir));
+	}
+
+	ray_pos = hit_pos + delta + (ray_dir * 1e-4);
+	grid_pos = ivec3(floor(ray_pos));
+	side_dist = calculate_side_dist(ray_pos, ray_dir, grid_pos, travel_delta);
 }
 
 void main() {
@@ -42,25 +89,7 @@ void main() {
 	ivec3 grid_pos = ivec3(floor(ray_pos));
 	vec3 travel_delta = abs(1.0 / (ray_dir + 1e-8));
 	ivec3 step_dir = ivec3(sign(ray_dir));
-
-	vec3 side_dist;
-	if (ray_dir.x < 0.0) {
-		side_dist.x = (ray_pos.x - float(grid_pos.x)) * travel_delta.x;
-	} else {
-		side_dist.x = (float(grid_pos.x) + 1.0 - ray_pos.x) * travel_delta.x;
-	}
-
-	if (ray_dir.y < 0.0) {
-		side_dist.y = (ray_pos.y - float(grid_pos.y)) * travel_delta.y;
-	} else {
-		side_dist.y = (float(grid_pos.y) + 1.0 - ray_pos.y) * travel_delta.y;
-	}
-
-	if (ray_dir.z < 0.0) {
-		side_dist.z = (ray_pos.z - float(grid_pos.z)) * travel_delta.z;
-	} else {
-		side_dist.z = (float(grid_pos.z) + 1.0 - ray_pos.z) * travel_delta.z;
-	}
+	vec3 side_dist = calculate_side_dist(ray_pos, ray_dir, grid_pos, travel_delta);
 
 	bool hit = false;
 	int max_steps = 30;
@@ -111,15 +140,16 @@ void main() {
 			side = 0;
 
 			face_val = get_channel_byte(vox.r, step_dir.x > 0);
+			
 			if (is_face_opaque(face_val)) {
 				hit = true;
 				t_hit = side_dist.x;
 				break;
 			}
-
 			if (is_face_portal(face_val)) {
-				grid_pos.x += 20;
+				traverse_portal(face_val, side, side_dist.x, ray_pos, ray_dir, step_dir, grid_pos, side_dist, travel_delta);
 				last_side = -1;
+				continue;
 			}
 
 			side_dist.x += travel_delta.x;
@@ -130,10 +160,16 @@ void main() {
 			side = 1;
 
 			face_val = get_channel_byte(vox.g, step_dir.y > 0);
+			
 			if (is_face_opaque(face_val)) {
 				hit = true;
 				t_hit = side_dist.y;
 				break;
+			}
+			if (is_face_portal(face_val)) {
+				traverse_portal(face_val, side, side_dist.y, ray_pos, ray_dir, step_dir, grid_pos, side_dist, travel_delta);
+				last_side = -1;
+				continue;
 			}
 
 			side_dist.y += travel_delta.y;
@@ -144,10 +180,17 @@ void main() {
 			side = 2;
 
 			face_val = get_channel_byte(vox.b, step_dir.z > 0);
+			
 			if (is_face_opaque(face_val)) {
 				hit = true;
 				t_hit = side_dist.z;
 				break;
+			}
+
+			if (is_face_portal(face_val)) {
+				traverse_portal(face_val, side, side_dist.z, ray_pos, ray_dir, step_dir, grid_pos, side_dist, travel_delta);
+				last_side = -1;
+				continue;
 			}
 
 			side_dist.z += travel_delta.z;

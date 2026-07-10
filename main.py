@@ -19,12 +19,18 @@ palette[0] = (0.5, 0.5, 0.5)
 palette[1] = (0.7, 0.2, 0.2)
 palette[2] = (0.2, 0.7, 0.2)
 palette[3] = (0.2, 0.2, 0.7)
+palette[4] = (0.2, 0.7, 0.7)
+palette[5] = (0.7, 0.2, 0.7)
+palette[6] = (0.7, 0.7, 0.2)
 
 palette.set_name(0, "grey")
 palette.set_name(1, "red")
 palette.set_name(2, "green")
 palette.set_name(3, "blue")
-palette.set_name(4, "anim")
+palette.set_name(4, "cyan")
+palette.set_name(5, "magenta")
+palette.set_name(6, "yellow")
+palette.set_name(7, "anim")
 
 
 def screenshot(ctx, dirname="screenshots"):
@@ -96,7 +102,7 @@ def main():
 		faces=FaceSet.matching(
 			face_x=generate_wall_data(1, palette.get_id("red")),
 			face_y=generate_wall_data(1, palette.get_id("green")),
-			face_z=generate_wall_data(0, palette.get_id("anim")),
+			face_z=generate_wall_data(0, palette.get_id("grey")),
 		)
 	)
 	builder.linked_portals(
@@ -117,6 +123,9 @@ def main():
 	)
 
 	builder.build()
+
+	portal_buffer = ctx.buffer(builder.serialize_portal_data())
+	portal_buffer.bind_to_storage_buffer(2)
 
 	tex_room = ctx.texture3d((32, 32, 32), 4, room.tobytes(), dtype='u2')
 	tex_room.filter = (moderngl.NEAREST, moderngl.NEAREST)

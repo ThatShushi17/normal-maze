@@ -74,7 +74,9 @@ class RoomBuilder:
 			f()
 
 	def serialize_portal_data(self):
-		return np.array(
-			[pd.tobytes() for pd in self._portal_data],
-			dtype=np.int32
-		).tobytes()
+		if not self._portal_data:
+			return np.array([], dtype=np.int32)
+
+		raw_bytes = b"".join(pd.tobytes() for pd in self._portal_data)
+
+		return np.frombuffer(raw_bytes, dtype=np.int32)
