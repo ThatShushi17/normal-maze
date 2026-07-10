@@ -1,3 +1,9 @@
+from dataclasses import dataclass
+from engine.math import pack_byte
+
+import glm
+import struct
+
 def find_uv_axes(main_axis):
 	if main_axis == 0:
 		return 1, 2
@@ -19,3 +25,87 @@ def check_face_solid(face_1, face_2, is2=None):
 		return faces[is2] != 0
 	else:
 		return face_1 != 0 or face_2 != 0
+
+def generate_wall_data(datatype, data):
+	return pack_byte(1, 0, datatype, data)
+
+@dataclass(frozen=True)
+class PortalData:
+	delta: glm.ivec3
+	flip_main: int
+
+	def tobytes(self):
+		return struct.pack(
+			"4i",
+			self.delta.x,
+			self.delta.y,
+			self.delta.z,
+			self.flip_main
+		)
+
+@dataclass(frozen=True)
+class FacePos:
+	axis: int
+	face_i: int
+	start_u: int
+	start_v: int
+
+	def get_world_start_pos(self):
+		vec = glm.uvec3(0)
+
+		vox_dist, is_high = from_face_idx(self.face_i)
+		axis_u, axis_v = find_uv_axes(self.axis)
+
+		vec[self.axis] = vox_dist + is_high
+		vec[axis_u], vec[axis_v] = self.start_u, self.start_v
+
+		return vec
+
+
+@dataclass(frozen=True)
+class FaceSet:
+	x_low: int
+	x_high: int
+	y_low: int
+	y_high: int
+	z_low: int
+	z_high: int
+
+	def __getitem__(self, key):
+		axis, is_high = key
+		return (
+			self.x_low,
+			self.x_high,
+			self.y_low,
+			self.y_high,
+			self.z_low,
+			self.z_high,
+		)[2 * axis + is_high]
+
+	@classmethod
+	def uniform(cls, face):
+		return cls(face, face, face, face, face, face)
+
+	@classmethod
+	def matching(cls, face_x, face_y, face_z):
+		return cls(
+			face_x, face_x,
+			face_y, face_y,
+			face_z, face_z,
+		)
+
+	@classmethod
+	def uniform_room(cls, wall, floor, ceiling):
+		return cls(
+			wall, wall,
+			wall, wall,
+			floor, ceiling,
+		)
+
+	@classmethod
+	def matching_room(cls, wall_x, wall_y, floor, ceiling):
+		return cls(
+			wall_x, wall_x,
+			wall_y, wall_y,
+			floor, ceiling,
+		)

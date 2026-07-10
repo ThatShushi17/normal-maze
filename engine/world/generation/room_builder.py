@@ -1,12 +1,18 @@
+from engine.math import find_uv_axes, from_face_idx, to_face_idx, pack_byte, FaceSet, FacePos, PortalData
+
 import numpy as np
-from engine.math.geometry import find_uv_axes, from_face_idx, to_face_idx
+import glm
 
 class RoomBuilder:
 	def __init__(self):
 		self.room = None
+		self._portal_data = []
 		self._wall_queue = []
 
-	def _wall(self, room, data, axis, vox_dist, is_high, size_u, size_v, start_u, start_v):
+	def _wall(self, room, data, face_pos: FacePos, size_u, size_v):
+		axis, start_u, start_v = face_pos.axis, face_pos.start_u, face_pos.start_v
+
+		vox_dist, is_high = from_face_idx(face_pos.face_i)
 		end_u, end_v = start_u + size_u, start_v + size_v
 
 		mask = 0xFF if is_high else 0xFF00
@@ -32,11 +38,10 @@ class RoomBuilder:
 	def bind_room(self, room):
 		self.room = room
 
-	def wall(self, data, axis, face_i, size_u, size_v, start_u, start_v):
-		vox_dist, is_high = from_face_idx(face_i)
-		self._wall_queue.append(lambda: self._wall(self.room, data, axis, vox_dist, is_high, size_u, size_v, start_u, start_v))
+	def wall(self, data, face_pos: FacePos, size_u, size_v):
+		self._wall_queue.append(lambda: self._wall(self.room, data, face_pos, size_u, size_v))
 
-	def box(self, pos, size, faces):
+	def box(self, pos, size, faces: FaceSet):
 		for axis in range(3):
 			axis_u, axis_v = find_uv_axes(axis)
 
@@ -45,12 +50,31 @@ class RoomBuilder:
 			start_u, start_v = pos[axis_u], pos[axis_v]
 			size_u, size_v = size[axis_u], size[axis_v]
 
-			face_start_dist = to_face_idx(start_dist, False)
-			face_end_dist = to_face_idx(end_dist, True)
+			face_start_i = to_face_idx(start_dist, False)
+			face_end_i = to_face_idx(end_dist, True)
 
-			self.wall(faces[axis, 0], axis, face_start_dist, size_u, size_v, start_u, start_v)
-			self.wall(faces[axis, 1], axis, face_end_dist, size_u, size_v, start_u, start_v)
+			self.wall(faces[axis, 0], FacePos(axis, face_start_i, start_u, start_v), size_u, size_v)
+			self.wall(faces[axis, 1], FacePos(axis, face_end_i, start_u, start_v), size_u, size_v)
+
+	def linked_portals(self, in_face_pos: FacePos, out_face_pos: FacePos, size_u, size_v):
+		delta = glm.ivec3(out_face_pos.get_world_start_pos()) - glm.ivec3(in_face_pos.get_world_start_pos())
+		flip_main = (in_face_pos.face_i % 2) ^ (out_face_pos.face_i % 2)
+
+		portal_id = len(self._portal_data)
+		self.wall(pack_byte(0, 1, portal_id & 0b110000, portal_id & 0xF), in_face_pos, size_u, size_v)
+		self._portal_data.append(PortalData(delta, flip_main))
+
+		portal_id = len(self._portal_data)
+		self.wall(pack_byte(0, 1, portal_id & 0b110000, portal_id & 0xF), out_face_pos, size_u, size_v)
+		self._portal_data.append(PortalData(-delta, flip_main))
+
 
 	def build(self):
 		for f in self._wall_queue:
 			f()
+
+	def serialize_portal_data(self):
+		return np.array(
+			[pd.tobytes() for pd in self._portal_data],
+			dtype=np.int32
+		).tobytes()

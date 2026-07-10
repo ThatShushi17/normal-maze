@@ -1,4 +1,5 @@
 import os
+from glm import axis
 import pygame
 import sys
 import moderngl
@@ -7,9 +8,8 @@ import math
 
 from PIL import Image
 
-from engine.world import Player, RoomBuilder, FaceSet
-from engine.math.colors import Palette
-from engine.world.face import generate_wall_data
+from engine.world import Player, RoomBuilder
+from engine.math import Palette, pack_byte, generate_wall_data, FaceSet, FacePos
 
 WIDTH, HEIGHT = 800, 600
 
@@ -89,15 +89,33 @@ def main():
 	builder = RoomBuilder()
 	room = builder.create_room()
 	builder.bind_room(room)
+
 	builder.box(
 		pos=(0, 0, 0),
-		size=(32, 32, 32),
+		size=(10, 10, 10),
 		faces=FaceSet.matching(
 			face_x=generate_wall_data(1, palette.get_id("red")),
 			face_y=generate_wall_data(1, palette.get_id("green")),
 			face_z=generate_wall_data(0, palette.get_id("anim")),
 		)
 	)
+	builder.linked_portals(
+		in_face_pos=FacePos(
+			axis=0,
+			face_i=9,
+			start_u=3,
+			start_v=3
+		),
+		out_face_pos=FacePos(
+			axis=0,
+			face_i=10,
+			start_u=7,
+			start_v=3
+		),
+		size_u=2,
+		size_v=2,
+	)
+
 	builder.build()
 
 	tex_room = ctx.texture3d((32, 32, 32), 4, room.tobytes(), dtype='u2')
