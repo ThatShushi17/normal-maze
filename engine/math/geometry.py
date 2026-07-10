@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 from engine.math import pack_byte
 
+import glm
+import struct
+
 def find_uv_axes(main_axis):
 	if main_axis == 0:
 		return 1, 2
@@ -27,11 +30,37 @@ def generate_wall_data(datatype, data):
 	return pack_byte(1, 0, datatype, data)
 
 @dataclass(frozen=True)
+class PortalData:
+	delta: glm.ivec3
+	flip_main: int
+
+	def tobytes(self):
+		return struct.pack(
+			"4i",
+			self.delta.x,
+			self.delta.y,
+			self.delta.z,
+			self.flip_main
+		)
+
+@dataclass(frozen=True)
 class FacePos:
 	axis: int
 	face_i: int
 	start_u: int
 	start_v: int
+
+	def get_world_start_pos(self):
+		vec = glm.uvec3(0)
+
+		vox_dist, is_high = from_face_idx(self.face_i)
+		axis_u, axis_v = find_uv_axes(self.axis)
+
+		vec[self.axis] = vox_dist + is_high
+		vec[axis_u], vec[axis_v] = self.start_u, self.start_v
+
+		return vec
+
 
 @dataclass(frozen=True)
 class FaceSet:
