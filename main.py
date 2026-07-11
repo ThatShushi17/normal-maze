@@ -7,11 +7,12 @@ import numpy as np
 import math
 
 from PIL import Image
+import imageio
 
 from engine.world import Player, RoomBuilder
 from engine.math import Palette, pack_byte, generate_wall_data, FaceSet, FacePos
 
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 800, 608
 
 palette = Palette()
 
@@ -85,9 +86,14 @@ def main():
 	tex = ctx.texture((WIDTH, HEIGHT), 4)
 	tex.filter = (moderngl.NEAREST, moderngl.NEAREST)
 
-	# --- initialising game stuff --- #
+	# --- initialising media stuff --- #
 
 	screenshot_taken = False
+	recording = False
+	video_writer = None
+	record_pressed = False
+
+	# --- initialising game stuff --- #
 
 
 	# player = Player(2.0, 2.0, 2, 0, 0, 0.2, 3)
@@ -170,8 +176,26 @@ def main():
 					screenshot(ctx)
 					screenshot_taken = True
 
+				if event.key == pygame.K_F11 and not record_pressed:
+					record_pressed = True
+					recording = not recording
+
+					if recording:
+						print("start recording")
+						video_writer = imageio.get_writer("capture.mp4", fps=60, codec="libx264")
+
+					else:
+						print("stop recording")
+						if video_writer is not None:
+							video_writer.close()
+							video_writer = None
+
+
 			elif event.type == pygame.KEYUP:
-				screenshot_taken = False
+				if event.key == pygame.K_F12:
+					screenshot_taken = False
+				if event.key == pygame.K_F11:
+					record_pressed = False
 
 		keys = pygame.key.get_pressed()
 		m_dx, m_dy = pygame.mouse.get_rel()
@@ -197,6 +221,12 @@ def main():
 		tex.use(0)
 		program['u_tex'] = 0
 		vao.render(moderngl.TRIANGLE_STRIP)
+
+		if recording and video_writer is not None:
+			img_data = ctx.screen.read(components=3)
+			frame = np.frombuffer(img_data, dtype=np.uint8).reshape((HEIGHT, WIDTH, 3))
+			frame = np.flipud(frame)
+			video_writer.append_data(frame)
 
 		pygame.display.flip()
 
