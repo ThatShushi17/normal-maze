@@ -56,6 +56,8 @@ uv sync
 uv run main.py
 ```
 
+If you don't want to use `uv`, you will need to install the dependencies listed in `pyproject.toml` and make sure your version of python is up to date. Python 3.13.12 was the version tested, and other versions may break certain dependencies.
+
 ## License
 
 This project is licensed under the GNU Affero General Public License v3.0 (AGPLv3.0).
