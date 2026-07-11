@@ -57,8 +57,8 @@ def main():
 	screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.OPENGL | pygame.DOUBLEBUF)
 	clock = pygame.time.Clock()
 
-	# pygame.mouse.set_visible(False)
-	# pygame.event.set_grab(True)
+	pygame.mouse.set_visible(False)
+	pygame.event.set_grab(True)
 
 	# --- initialising mgl stuff --- #
 
