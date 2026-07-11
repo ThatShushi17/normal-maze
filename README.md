@@ -1,44 +1,61 @@
 # completely normal maze game
-this is a completely normal maze game. we have a completely normal voxel-based maze, which has normal things like a player and walls and multiple rooms and definitely not things like invisible portals or impossible geometry in a world that has no permanence. definitely not.
 
----
+this is a completely normal maze game.
+
+we have a completely normal voxel-based maze, which has normal things like a player and walls and multiple rooms and definitely not things like seamless portals enabling impossible geometry. definitely not.
 
 But for real now.
 
-This is a game where you navigate slightly eerie mazes that just don't make sense. The world silently warps around you as you explore through it, never _quite_ letting you understand whats going on.
+This is a game with the goal of letting the player explore liminal spaces in non-Euclidean geometry. You try to solve puzzles in a world silently different from our own. <!-- The game uses voxel-based engine and GPU shaders to create the world. -->
+
+## Gallery
+
+<p align="center">
+	<img src="docs/images/portal2.png" alt="normal-on-the-inside-room" width=800>
+	<br>
+	<em>A simple portal creating the effect of a <s>larger</s> normal-on-the-inside-room</em>
+	<br>
+	<br>
+	<img src="docs/images/portal1.png" alt="exposed-portal" width=800>
+	<br>
+	<em>one of the first portals i made when testing the generation code. i was surprised when just a single line in the shader made it work!</em>
+</p>
 
 ## Features
 
-- GPU voxel raymarching (3D DDA)
 - Face-based voxel data
+- 3D DDA on said voxels on the GPU
 - Procedural room builder
-- ~~Portals with arbitrary transforms~~ (WIP)
-
----
+- Oklab based color pipeline
+- Portals!
 
 ## Roadmap
 
-- [ ] Portal traversal
-- [ ] Collision Detection
-- [ ] Level editor (long term)
-
----
+- [ ] Arbitrary space transformation
+- [ ] Collision detection
+- [ ] Dynamic entities
+- [ ] Portal traversal for entities
+- [ ] Level editor mode
 
 ## Installation
 
-Make sure your python version is compliant with the requirements outlined in `pyproject.toml`
+The project uses [`uv`](https://docs.astral.sh/uv/) for package management.
+
+If you don't have it installed, follow the official installation guide:
+https://docs.astral.sh/uv/getting-started/installation/
+
+Then, run the following code in your preferred parent directory.
 
 ```bash
 git clone https://github.com/ThatShushi17/normal-maze
-cd ./normal-maze
-python -m venv .venv
-pip install -r requirements.txt
+cd normal-maze
 
-# Linux/macOS
-source .venv/bin/activate
+uv sync
 
-# Windows
-# .venv\Scripts\activate
-
-python main.py
+# to run the game
+uv run main.py
 ```
+
+## License
+
+This project is licensed under the GNU Affero General Public License v3.0 (AGPLv3.0).
