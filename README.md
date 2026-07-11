@@ -60,4 +60,4 @@ If you don't want to use `uv`, you will need to install the dependencies listed 
 
 ## License
 
-This project is licensed under the GNU Affero General Public License v3.0 (AGPLv3.0).
+This project is licensed under the GNU Affero General Public License v3.0 (AGPLv3).
