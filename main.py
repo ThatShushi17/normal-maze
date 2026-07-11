@@ -90,7 +90,8 @@ def main():
 	screenshot_taken = False
 
 
-	player = Player(2.0, 2.0, 2, 0, 0, 0.2, 3)
+	# player = Player(2.0, 2.0, 2, 0, 0, 0.2, 3)
+	player = Player(1.0, 1.0, 8.4, 0.0, 0.0, 0.1, 3.0)
 
 	builder = RoomBuilder()
 	room = builder.create_room()
@@ -105,20 +106,38 @@ def main():
 			face_z=generate_wall_data(0, palette.get_id("grey")),
 		)
 	)
+	builder.box(
+		pos=(10, 0, 3),
+		size=(10, 10, 7),
+		faces=FaceSet.matching(
+			face_x=generate_wall_data(1, palette.get_id("magenta")),
+			face_y=generate_wall_data(1, palette.get_id("blue")),
+			face_z=generate_wall_data(0, palette.get_id("yellow")),
+		)
+	)
+	builder.box(
+		pos=(4, 4, 7),
+		size=(3, 3, 3),
+		faces=FaceSet.matching(
+			face_x=generate_wall_data(1, palette.get_id("grey")),
+			face_y=generate_wall_data(1, palette.get_id("grey")),
+			face_z=generate_wall_data(0, palette.get_id("grey")),
+		)
+	)
 	builder.linked_portals(
 		in_face_pos=FacePos(
 			axis=0,
-			face_i=9,
-			start_u=3,
-			start_v=3
+			face_i=7,
+			start_u=5,
+			start_v=8
 		),
 		out_face_pos=FacePos(
 			axis=0,
-			face_i=10,
-			start_u=7,
-			start_v=3
+			face_i=27,
+			start_u=5,
+			start_v=8
 		),
-		size_u=2,
+		size_u=1,
 		size_v=2,
 	)
 
@@ -166,7 +185,7 @@ def main():
 		compute_shader['u_voxel_grid'] = 1
 
 		compute_shader['u_cam_pos'] = tuple(player.pos)
-		compute_shader['u_cam_forward'] = tuple(player.forward)
+		compute_shader['u_cam_forward'] = tuple(player.cam_forward)
 		compute_shader['u_cam_up'] = tuple(player.up)
 		compute_shader['u_cam_right'] = tuple(player.right)
 
@@ -189,6 +208,7 @@ def main():
 	vao.release()
 	program.release()
 	compute_shader.release()
+	portal_buffer.release()
 
 	pygame.quit()
 	sys.exit()

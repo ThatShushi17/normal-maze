@@ -20,6 +20,7 @@ class Player:
 		self.pos.y = y
 		self.pos.z = z
 
+		self.cam_forward = glm.vec3()
 		self.velocity = glm.vec3()
 		self.forward = glm.vec3()
 		self.right = glm.vec3()
@@ -36,13 +37,16 @@ class Player:
 		yaw = math.radians(self.yaw)
 		pitch = math.radians(self.pitch)
 
-		self.forward.x = math.cos(yaw) * math.cos(pitch)
-		self.forward.y = math.sin(yaw) * math.cos(pitch)
-		self.forward.z = math.sin(pitch)
+		self.forward.x = math.cos(yaw)
+		self.forward.y = math.sin(yaw)
 
-		self.forward = glm.normalize(self.forward)
-		self.right = glm.normalize(glm.cross(self.forward, WORLD_UP))
-		self.up = glm.normalize(glm.cross(self.right, self.forward))
+		self.cam_forward.x = math.cos(yaw) * math.cos(pitch)
+		self.cam_forward.y = math.sin(yaw) * math.cos(pitch)
+		self.cam_forward.z = math.sin(pitch)
+
+		self.cam_forward = glm.normalize(self.cam_forward)
+		self.right = glm.cross(self.forward, WORLD_UP)
+		self.up = glm.normalize(glm.cross(self.right, self.cam_forward))
 
 
 	def _handle_direction(self, keys, m_dx, m_dy):
