@@ -39,6 +39,7 @@ class Player:
 
 		self.forward.x = math.cos(yaw)
 		self.forward.y = math.sin(yaw)
+		self.forward.z = 0.0
 
 		self.cam_forward.x = math.cos(yaw) * math.cos(pitch)
 		self.cam_forward.y = math.sin(yaw) * math.cos(pitch)
